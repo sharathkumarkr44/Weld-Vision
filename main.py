@@ -72,5 +72,3 @@ if files_uploaded and st.button("Detect"):
             # Download link
             href = f'<a href="data:application/octet-stream;base64,{base64.b64encode(image_bytes.getvalue()).decode()}" download="processed_image{i+1}.png">Download Processed Image {i+1}</a>'
             st.markdown(href, unsafe_allow_html=True)
-            
-            #newline integration
