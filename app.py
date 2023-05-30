@@ -94,7 +94,7 @@ def main():
 
     # custom classes
     model_names = list(model.names.values())
-    assigned_class = st.sidebar.multiselect("Choose a type", model_names, default=model_names)
+    assigned_class = st.sidebar.multiselect("Choose weld types", model_names, default=model_names)
     classes = [model_names.index(name) for name in assigned_class]
 
     # confidence slider
