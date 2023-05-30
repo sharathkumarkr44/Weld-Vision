@@ -93,12 +93,9 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # custom classes
-    if st.sidebar.checkbox("Select Weld Types"):
-        model_names = list(model.names.values())
-        assigned_class = st.sidebar.multiselect("Choose a type", model_names, default=[model_names[0]])
-        classes = [model_names.index(name) for name in assigned_class]
-    else:
-        classes = list(model.names.keys())
+    model_names = list(model.names.values())
+    assigned_class = st.sidebar.multiselect("Choose a type", model_names, default=list(model.names.keys()))
+    classes = [model_names.index(name) for name in assigned_class]
 
     # confidence slider
     confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
