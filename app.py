@@ -153,6 +153,15 @@ def pdf_input(data_src):
 
 
 def process(input_option, data_src, classes):
+    """
+    Processes the input based on the selected options.
+
+    Args:
+        input_option (str): Selected input type ('image' or 'document').
+        data_src (str): Selected input source option ('Sample data' or 'Upload your own data').
+        classes (list): List of classes to detect.
+
+    """
     if input_option == "image":
         image_input(data_src, classes)
     else:
@@ -184,7 +193,7 @@ def main():
         return ()
     # Custom classes
     classes = get_custom_classes()
-    # confidence slider
+    # Confidence slider
     confidence = st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=0.45)
     # Process input
     process(input_option, data_src, classes)
