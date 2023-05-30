@@ -20,7 +20,7 @@ After cloning the repo:
 2. Add sample images to `data/sample_images`
 3. Add the model file to `models/` and change `cfg_model_path` to its path.
 ```bash
-git clone https://github.com/moaaztaha/Yolo-Interface-using-Streamlit
-cd Yolo-Interface-using-Streamlit
+git clone https://code.ovgu.de/cezy07na/weldvision.git
+cd weldvision
 streamlit run app.py
 ```
