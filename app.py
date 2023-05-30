@@ -26,17 +26,15 @@ def image_input(data_src, classes):
     if img_file:
         tab1, tab2 = st.tabs(["Input", "Prediction"])
         with tab1:
-            st.image(img_file, caption="Selected Image", use_column_width=True)
+            st.image(img_file, use_column_width=True)
         with tab2:
             img = infer_image(img_file, classes)
-            st.image(img, caption="Model prediction", use_column_width=True)
+            st.image(img, use_column_width=True)
             from io import BytesIO
             buf = BytesIO()
             img.save(buf, format="JPEG")
             byte_im = buf.getvalue()
-            col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
-            with col5:
-                btn = st.download_button(
+            st.download_button(
                         label="Download",
                         data=byte_im,
                         file_name="Prediction.png",
