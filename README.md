@@ -1,7 +1,7 @@
 # Object Detection using Yolov8
 A web interface for real-time yolo inference using streamlit. It supports CPU and GPU inference
 
-<img src="output.gif" alt="demo of the dashboard" width="800"/>
+<img src="app.jpg" alt="demo of the dashboard" width="800"/>
 
 
 ## Features
