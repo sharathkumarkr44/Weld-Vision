@@ -15,8 +15,8 @@ def image_input(data_src, classes):
     if data_src == 'Sample data':
         # get all sample images
         img_path = glob.glob('data/sample_images/*')
-        img_slider = st.slider("Select a sample image", min_value=1, max_value=len(img_path), step=1)
-        img_file = img_path[img_slider - 1]
+        img_slider = st.selectbox("Select a sample image", ('Sample 1', 'Sample 2', 'Sample 3'))
+        img_file = img_path[int(img_slider[-1]) - 1]
     else:
         img_bytes = st.file_uploader("Upload an image", type=['png', 'jpeg', 'jpg'])
         if img_bytes:
