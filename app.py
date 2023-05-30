@@ -10,7 +10,7 @@ cfg_model_path = 'models/yolov8.pt'
 model = None
 confidence = .25
 
-def image_input(data_src):
+def image_input(data_src, classes):
     img_file = None
     if data_src == 'Sample data':
         # get all sample images
@@ -28,7 +28,7 @@ def image_input(data_src):
         with tab1:
             st.image(img_file, caption="Selected Image", use_column_width=True)
         with tab2:
-            img = infer_image(img_file)
+            img = infer_image(img_file, classes)
             st.image(img, caption="Model prediction", use_column_width=True)
             from io import BytesIO
             buf = BytesIO()
@@ -46,8 +46,8 @@ def image_input(data_src):
 def pdf_input(data_src):
     vid_bytes = st.file_uploader("Upload a document", type=['pdf'])
 
-def infer_image(img, size=None):
-    result = model.predict(source=img, conf=confidence)
+def infer_image(img, classes):
+    result = model.predict(source=img, conf=confidence, classes = classes)
     image = Image.fromarray(result[0].plot()[:,:,::-1])
     return image
 
@@ -97,15 +97,14 @@ def main():
         model_names = list(model.names.values())
         assigned_class = st.sidebar.multiselect("Choose a type", model_names, default=[model_names[0]])
         classes = [model_names.index(name) for name in assigned_class]
-        model.classes = classes
     else:
-        model.classes = list(model.names.keys())
+        classes = list(model.names.keys())
 
     # confidence slider
     confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
 
     if input_option == 'image':
-        image_input(data_src)
+        image_input(data_src, classes)
     else:
         pdf_input(data_src)
     
