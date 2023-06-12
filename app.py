@@ -6,6 +6,7 @@ from io import BytesIO
 import streamlit as st
 from ultralytics import YOLO
 from dotenv import load_dotenv
+import pandas as pd
 
 
 def init():
@@ -74,6 +75,7 @@ def get_custom_classes():
 
     """
     model_names = list(model.names.values())
+    global assigned_class
     assigned_class = st.sidebar.multiselect("Choose weld types", model_names, default=model_names)
     classes = [model_names.index(name) for name in assigned_class]
     return classes
@@ -93,8 +95,20 @@ def infer_image(img, classes):
     """
     result = model.predict(source=img, conf=confidence, classes=classes)
     image = Image.fromarray(result[0].plot()[:, :, ::-1])
-    return image
+    box_counts = {}
+    for res in result:
+        for box in res.boxes:
+            # Extract the class label for the bounding box
+            class_label = model.names[box.cls.item()]
 
+            # Check if the class label is already in the dictionary
+            if class_label in box_counts:
+                # Increment the count for the class label
+                box_counts[class_label] += 1
+            else:
+                # Initialize the count for the class label
+                box_counts[class_label] = 1
+    return image, box_counts
 
 def download_image(img):
     """
@@ -136,9 +150,11 @@ def image_input(data_src, classes):
         with tab1:
             st.image(img_file, use_column_width=True)
         with tab2:
-            img = infer_image(img_file, classes)
+            img, class_count = infer_image(img_file, classes)
             download_image(img)
             st.image(img, use_column_width=True)
+            df = pd.DataFrame(class_count.items(), columns=['Class', 'Detections'])
+            st.table(df)
 
 
 def pdf_input(data_src):
@@ -193,8 +209,15 @@ def main():
         return ()
     # Custom classes
     classes = get_custom_classes()
+    #suspected weld symbols input from user
+    susp_welds = st.sidebar.number_input("Suspected Welds", min_value=0, step=1)
+    # Confidence adjustment based on suspected number of welds
+    if susp_welds:
+        confidence = 1.0 / susp_welds
+    else:
+        confidence = 0.45
     # Confidence slider
-    confidence = st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=0.45)
+    confidence = st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=confidence)
     # Process input
     process(input_option, data_src, classes)
 
