@@ -7,6 +7,7 @@ import streamlit as st
 from ultralytics import YOLO
 from dotenv import load_dotenv
 import pandas as pd
+from numpy import random
 
 
 def init():
@@ -25,7 +26,7 @@ def init():
         st.markdown("---")
         st.markdown("A web-app to detect the welds in 2D technical engineering drawings. \
                     The app also generates details such as the count of the welds."
-        )
+                    )
 
     st.sidebar.title("Settings")
 
@@ -81,21 +82,25 @@ def get_custom_classes():
     return classes
 
 
-def infer_image(img, classes):
+def infer_image(img, classes, confidence = 0.45):
     """
     Performs inference on the input image.
 
     Args:
         img (str): Path to the input image.
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     Returns:
         PIL.Image: Image with predictions drawn.
+        int: Total count of detected welds.
 
     """
     result = model.predict(source=img, conf=confidence, classes=classes)
     image = Image.fromarray(result[0].plot()[:, :, ::-1])
     box_counts = {}
+    total_count = 0
+    key_count = 0
     for res in result:
         for box in res.boxes:
             # Extract the class label for the bounding box
@@ -108,7 +113,15 @@ def infer_image(img, classes):
             else:
                 # Initialize the count for the class label
                 box_counts[class_label] = 1
-    return image, box_counts
+
+            total_count += 1  # Increment total count
+
+    # Compare the total count with susp_welds and adjust confidence
+    if total_count < susp_welds:
+        confidence *= total_count / susp_welds
+        image, box_counts, confidence = infer_image(img, classes, confidence)
+    return image, box_counts, confidence
+
 
 def download_image(img):
     """
@@ -124,13 +137,14 @@ def download_image(img):
     st.download_button(label="Download", data=byte_im, file_name="Prediction.png", mime="image/jpeg")
 
 
-def image_input(data_src, classes):
+def image_input(data_src, classes, confidence):
     """
     Handles image input and displays the input image and prediction.
 
     Args:
         data_src (str): Data source option (sample data or upload your own data).
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     """
     img_file = None
@@ -150,7 +164,8 @@ def image_input(data_src, classes):
         with tab1:
             st.image(img_file, use_column_width=True)
         with tab2:
-            img, class_count = infer_image(img_file, classes)
+            img, class_count, confidence = infer_image(img_file, classes, confidence)
+            st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=confidence, key=random.randint(100))
             download_image(img)
             st.image(img, use_column_width=True)
             df = pd.DataFrame(class_count.items(), columns=['Class', 'Detections'])
@@ -168,7 +183,7 @@ def pdf_input(data_src):
     pdf_file = st.file_uploader("Upload a document", type=["pdf"])
 
 
-def process(input_option, data_src, classes):
+def process(input_option, data_src, classes, confidence):
     """
     Processes the input based on the selected options.
 
@@ -176,12 +191,21 @@ def process(input_option, data_src, classes):
         input_option (str): Selected input type ('image' or 'document').
         data_src (str): Selected input source option ('Sample data' or 'Upload your own data').
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     """
     if input_option == "image":
-        image_input(data_src, classes)
+        image_input(data_src, classes, confidence)
     else:
         pdf_input(data_src)
+
+def conf_score(confidence, total_count, susp_welds, img_file, classes):
+    # Compare the total count with susp_welds and adjust confidence
+    while total_count < susp_welds:
+        confidence *= total_count / susp_welds
+        image, class_count, total_count = infer_image(img_file, classes, confidence)
+    return image, class_count, confidence
+    #print("new conf. score: ", confidence)
 
 
 def main():
@@ -190,9 +214,9 @@ def main():
 
     """
     init()
-    global model, confidence, MODEL_PATH
+    global model, MODEL_PATH, total_count
+    total_count = 0
     MODEL_PATH = os.environ.get("MODEL_PATH")
-
     # Upload model
     model_src = st.sidebar.radio("Select a model", ["Weld Detector", "Weld Segmentor"])
     # Device options
@@ -209,18 +233,15 @@ def main():
         return ()
     # Custom classes
     classes = get_custom_classes()
-    #suspected weld symbols input from user
+    # Suspected weld symbols input from user
+    global susp_welds
     susp_welds = st.sidebar.number_input("Suspected Welds", min_value=0, step=1)
-    # Confidence adjustment based on suspected number of welds
-    if susp_welds:
-        confidence = 1.0 / susp_welds
-    else:
-        confidence = 0.45
     # Confidence slider
-    confidence = st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=confidence)
-    # Process input
-    process(input_option, data_src, classes)
+    #confidence = st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=0.45)
+    confidence = 0.45
 
+    # Process input
+    process(input_option, data_src, classes, confidence)
     st.sidebar.markdown("---")
 
 
