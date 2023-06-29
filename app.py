@@ -7,7 +7,6 @@ import streamlit as st
 from ultralytics import YOLO
 from dotenv import load_dotenv
 import pandas as pd
-from numpy import random
 
 
 def init():
@@ -82,7 +81,7 @@ def get_custom_classes():
     return classes
 
 
-def infer_image(img, classes, confidence = 0.45):
+def infer_image(img, classes, confidence):
     """
     Performs inference on the input image.
 
@@ -165,7 +164,7 @@ def image_input(data_src, classes, confidence):
             st.image(img_file, use_column_width=True)
         with tab2:
             img, class_count, confidence = infer_image(img_file, classes, confidence)
-            st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=confidence, key=random.randint(100))
+            st.sidebar.slider("Confidence", min_value=0.1, max_value=1.0, value=confidence)
             download_image(img)
             st.image(img, use_column_width=True)
             df = pd.DataFrame(class_count.items(), columns=['Class', 'Detections'])
