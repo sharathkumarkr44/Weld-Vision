@@ -2,3 +2,4 @@ python-dotenv
 torch
 streamlit
 ultralytics
+pascal_voc_writer
