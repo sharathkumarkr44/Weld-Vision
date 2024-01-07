@@ -22,5 +22,9 @@ After cloning the repo:
 ```bash
 git clone https://code.ovgu.de/cezy07na/weldvision.git
 cd weldvision
+cd streamlit_img_label/frontend
+npm install
+cd ..
+cd ..
 streamlit run app.py
 ```
