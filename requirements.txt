@@ -1,3 +1,4 @@
-dotenv
+python-dotenv
+torch
 streamlit
 ultralytics
