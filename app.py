@@ -130,6 +130,7 @@ def get_custom_classes():
 
     """
     model_names = list(model.names.values())
+    global assigned_class
     assigned_class = st.sidebar.multiselect("Choose weld types", model_names, default=model_names)
     classes = [model_names.index(name) for name in assigned_class]
     return classes
@@ -142,9 +143,11 @@ def infer_image(img, classes, confidence = 0.45):
     Args:
         img (str): Path to the input image.
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     Returns:
         PIL.Image: Image with predictions drawn.
+        int: Total count of detected welds.
 
     """
     result = model.predict(source=img, conf=confidence, classes=classes, save_txt=None)
@@ -269,6 +272,7 @@ def image_input(data_src, classes, confidence):
     Args:
         data_src (str): Data source option (sample data or upload your own data).
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     """
     img_file = None
@@ -321,6 +325,7 @@ def process(input_option, data_src, classes, confidence):
         input_option (str): Selected input type ('image' or 'document').
         data_src (str): Selected input source option ('Sample data' or 'Upload your own data').
         classes (list): List of classes to detect.
+        confidence (float): Confidence threshold for detection.
 
     """
     if input_option == "image":
